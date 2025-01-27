@@ -191,8 +191,10 @@ elif opt.optimizer == 'Adam':
 elif opt.optimizer == 'AdamW':
     optimizer = optim.AdamW(model.parameters(),lr=opt.lr)
 best_valid_auroc = 0
+best_valid_aucpr = 0
 best_valid_accuracy = 0
 best_test_auroc = 0
+best_test_aucpr = 0
 best_test_accuracy = 0
 best_valid_rmse = 100000
 print('Training begins now.')
@@ -237,26 +239,29 @@ for epoch in range(opt.epochs):
             model.eval()
             with torch.no_grad():
                 if opt.task in ['binary','multiclass']:
-                    accuracy, auroc = classification_scores(model, validloader, device, opt.task,vision_dset)
-                    test_accuracy, test_auroc = classification_scores(model, testloader, device, opt.task,vision_dset)
+                    accuracy, auroc, aucpr = classification_scores(model, validloader, device, opt.task,vision_dset)
+                    test_accuracy, test_auroc, test_aucpr = classification_scores(model, testloader, device, opt.task,vision_dset)
 
-                    print('[EPOCH %d] VALID ACCURACY: %.3f, VALID AUROC: %.3f' %
-                        (epoch + 1, accuracy,auroc ))
-                    print('[EPOCH %d] TEST ACCURACY: %.3f, TEST AUROC: %.3f' %
-                        (epoch + 1, test_accuracy,test_auroc ))
+                    print('[EPOCH %d] VALID ACCURACY: %.3f, VALID AUROC: %.3f, VALID AUCPR: %.3f' %
+                        (epoch + 1, accuracy,auroc, aucpr ))
+                    print('[EPOCH %d] TEST ACCURACY: %.3f, TEST AUROC: %.3f, TEST AUCPR: %.3f' %
+                        (epoch + 1, test_accuracy,test_auroc, test_aucpr ))
                     if opt.active_log:
-                        wandb.log({'valid_accuracy': accuracy ,'valid_auroc': auroc })     
-                        wandb.log({'test_accuracy': test_accuracy ,'test_auroc': test_auroc })  
+                        wandb.log({'valid_accuracy': accuracy ,'valid_auroc': auroc, 'valid_aucpr': aucpr })
+                        wandb.log({'test_accuracy': test_accuracy ,'test_auroc': test_auroc, 'test_aucpr': test_aucpr })
                     if opt.task =='multiclass':
                         if accuracy > best_valid_accuracy:
                             best_valid_accuracy = accuracy
                             best_test_auroc = test_auroc
+                            best_test_aucpr = test_aucpr
                             best_test_accuracy = test_accuracy
                             torch.save(model.state_dict(),'%s/bestmodel.pth' % (modelsave_path))
                     else:
-                        if auroc > best_valid_auroc:
+                        if aucpr > best_valid_aucpr:
+                            best_valid_aucpr = aucpr
                             best_valid_auroc = auroc
                             best_test_auroc = test_auroc
+                            best_test_aucpr = test_aucpr
                             best_test_accuracy = test_accuracy               
                             torch.save(model.state_dict(),'%s/bestmodel.pth' % (modelsave_path))
 
@@ -281,6 +286,7 @@ total_parameters = count_parameters(model)
 print('TOTAL NUMBER OF PARAMS: %d' %(total_parameters))
 if opt.task =='binary':
     print('AUROC on best model:  %.3f' %(best_test_auroc))
+    print('AUCPR on best model:  %.3f' % (best_test_aucpr))
 elif opt.task =='multiclass':
     print('Accuracy on best model:  %.3f' %(best_test_accuracy))
 else:
@@ -291,5 +297,5 @@ if opt.active_log:
         wandb.log({'total_parameters': total_parameters, 'test_rmse_bestep':best_test_rmse , 
         'cat_dims':len(cat_idxs) , 'con_dims':len(con_idxs) })        
     else:
-        wandb.log({'total_parameters': total_parameters, 'test_auroc_bestep':best_test_auroc , 
+        wandb.log({'total_parameters': total_parameters, 'test_auroc_bestep':best_test_auroc, 'test_aucpr_bestep':best_test_aucpr ,
         'test_accuracy_bestep':best_test_accuracy,'cat_dims':len(cat_idxs) , 'con_dims':len(con_idxs) })
