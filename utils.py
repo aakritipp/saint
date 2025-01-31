@@ -1,7 +1,7 @@
 import torch
 from sklearn.metrics import roc_auc_score, mean_squared_error, precision_recall_curve, auc
 import numpy as np
-from augmentations import embed_data_mask
+from saint.augmentations import embed_data_mask
 import torch.nn as nn
 
 
