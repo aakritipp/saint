@@ -108,37 +108,6 @@ def classification_scores(model, dloader, device, task, vision_dset):
     return acc.cpu().numpy(), aucc, aucpr
 
 
-def classification_scores_rac(model.encoder, dloader, device, task, vision_dset):
-    model.eval()
-    m = nn.Softmax(dim=1)
-    y_test = torch.empty(0).to(device)
-    y_pred = torch.empty(0).to(device)
-    prob = torch.empty(0).to(device)
-    with torch.no_grad():
-        for i, data in enumerate(dloader, 0):
-            x_categ, x_cont, y_gts, cat_mask, con_mask = data[0].to(device), data[1].to(device), data[2].to(device), \
-            data[3].to(device), data[4].to(device)
-            _, x_categ_enc, x_cont_enc = embed_data_mask(x_categ, x_cont, cat_mask, con_mask, model, vision_dset)          
-        
-            reps = model.transformer(x_categ_enc, x_cont_enc)
-            y_reps = reps[:, 0, :]
-            y_outs = model.mlpfory(y_reps)
-            # import ipdb; ipdb.set_trace()
-            y_test = torch.cat([y_test, y_gts.squeeze().float()], dim=0)
-            y_pred = torch.cat([y_pred, torch.argmax(y_outs, dim=1).float()], dim=0)
-            if task == 'binary':
-                prob = torch.cat([prob, m(y_outs)[:, -1].float()], dim=0)
-
-    correct_results_sum = (y_pred == y_test).sum().float()
-    acc = correct_results_sum / y_test.shape[0] * 100
-    aucc = 0
-    if task == 'binary':
-        aucc = roc_auc_score(y_score=prob.cpu(), y_true=y_test.cpu())
-        precision, recall, _ = precision_recall_curve(y_test.cpu(), prob.cpu())
-        aucpr = auc(recall, precision)
-    return acc.cpu().numpy(), aucc, aucpr
-
-
 def mean_sq_error(model, dloader, device, vision_dset):
     model.eval()
     y_test = torch.empty(0).to(device)
