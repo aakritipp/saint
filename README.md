@@ -27,8 +27,8 @@ We recommend using `anaconda` or `miniconda` for python. Our code has been teste
 
 Create a conda environment from the yml file and activate it.
 ```
-conda env create -f saint_environment.yml
-conda activate saint_env
+conda env create -f rafd_environment.yml
+conda activate rafd_env
 ```
 
 Make sure the following requirements are met
