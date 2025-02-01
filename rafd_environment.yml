@@ -1,4 +1,4 @@
-name: saint_env
+name: rafd_env
 channels:
   - anaconda
   - pytorch
