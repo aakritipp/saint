@@ -3,7 +3,7 @@ This repository is the official PyTorch implementation of RAFD. Find the paper o
 # Retrieval Augmented Fraud Detection (RAFD)
 
 
-![Overview](pipeline.png)
+![Overview](pipelineRAFD.png)
 
 This repository implements a novel approach to financial fraud detection by combining the power of SAINT (Self-Attention and Intersection Neural Network with Transformers) with retrieval-augmented classification techniques. The model addresses critical challenges in fraud detection, particularly the extreme class imbalance and evolving nature of fraudulent patterns.
 Architecture
