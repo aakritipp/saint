@@ -51,12 +51,7 @@ In each of our experiments, we use a single Tesla T4 16GB GPU.
 To train the model(s) in the paper, run this command:
 
 ```
-python train.py --dset_id <openml_dataset_id> --task <task_name> --attentiontype <attention_type> 
-```
-
-Pretraining is useful when there are few training data samples. Sample code looks like this. (Use train_robust.py file for pretraining and robustness experiments)
-```
-python train_robust.py --dset_id <openml_dataset_id> --task <task_name> --attentiontype <attention_type>  --pretrain --pt_tasks <pretraining_task_touse> --pt_aug <augmentations_on_data_touse> --ssl_samples <Number_of_labeled_samples>
+python train_RAC.py --dset_id <openml_dataset_id> --savemodelroot <pretrained model> --task <task_name> --attentiontype <attention_type> --cont_embeddings <embedding size> --context_size <context size>
 ```
 
 
@@ -80,26 +75,14 @@ python train_robust.py --dset_id <openml_dataset_id> --task <task_name> --attent
 #### <span style="color:Tomato">Most of the hyperparameters are hardcoded in train.py file. For datasets with really high number of features, we suggest using smaller batchsize, lower embedding dimension and fewer number of heads.</span>
 
 
-
-
-Requirements
-bashCopytorch>=1.8.0
-faiss-cpu>=1.7.0  # or faiss-gpu for GPU support
-numpy>=1.19.0
-pandas>=1.2.0
-scikit-learn>=0.24.0
-Installation
-bashCopygit clone https://github.com/[username]/RAFD
-cd RAFD
-pip install -r requirements.txt
-Usage
-Data Preparation
+## Data Preparation
 The model supports two main datasets:
 
-European Credit Card Default Dataset
+European Credit Card Default Dataset\
 IEEE-CIS Fraud Detection Dataset
 
 Data should be organized as follows:
+```
 Copydata/
 ├── european_credit/
 │   ├── train.csv
@@ -109,6 +92,8 @@ Copydata/
     ├── train.csv
     ├── valid.csv
     └── test.csv
+```
+```    
 Training
 bashCopypython train_rac.py \
     --dset_id 1 \
@@ -117,31 +102,21 @@ bashCopypython train_rac.py \
     --context_size 60 \
     --epochs 25 \
     --batchsize 256
+```
+
 Key arguments:
 
-dset_id: Dataset identifier (1: European Credit, 2: IEEE-CIS)
-context_size: Number of similar samples to retrieve (recommended: 60-120)
-embedding_size: Dimension of SAINT embeddings
+context_size: Number of similar samples to retrieve (recommended: 60-120)\
+embedding_size: Dimension of SAINT embeddings (default = 32)
 
-Model Configuration
-The model can be configured through several hyperparameters:
-pythonCopymodel = RACModel(
-    encoder=encoder_model,
-    candidate_embeddings=embds,
-    candidate_y=ys,
-    search_index=index_wpr,
-    n_classes=2,
-    d_main=32,
-    d_multiplier=1,
-    context_size=60
-)
-Performance
+
+## Performance
 On benchmark datasets, RAFD achieves:
 
 European Credit Card Dataset: 0.833 AUCPR (2.209% improvement over SAINT)
 IEEE CIS Dataset: 0.557 AUCPR (1.089% improvement over SAINT)
 
-Key Features
+## Key Features
 
 Dynamic Context Enhancement: Automatically enriches minority class representations through relevant sample retrieval
 Efficient Similarity Search: Uses FAISS for fast and scalable nearest neighbor search
@@ -149,39 +124,26 @@ Flexible Architecture: Can work with different encoder backbones (demonstrated w
 Interpretable Results: Retrieved samples provide insights into model decisions
 
 
-## Cite us
+## Citations and References
 
 ```
+This implementation is based on the methodology described in the following paper:
+RAFD:
+@inproceedings{10.1145/3677052.3698692,
+    author = {Pandey, Anubha},
+    title = {Retrieval Augmented Fraud Detection},
+    year = {2024}, isbn = {9798400710810},
+    publisher = {Association for Computing Machinery},
+    address = {New York, NY, USA},
+    url = {https://doi.org/10.1145/3677052.3698692},
+    doi = {10.1145/3677052.3698692}
+}
+
+SAINT:
 @article{somepalli2021saint,
   title={SAINT: Improved Neural Networks for Tabular Data via Row Attention and Contrastive Pre-Training},
   author={Somepalli, Gowthami and Goldblum, Micah and Schwarzschild, Avi and Bruss, C Bayan and Goldstein, Tom},
   journal={arXiv preprint arXiv:2106.01342},
   year={2021}
 }
-
-
-Citations and References
-This implementation is based on the methodology described in the following paper:
-bibtexCopy@inproceedings{long2022retrieval,
-  title={Retrieval Augmented Classification for Long-Tail Visual Recognition},
-  author={Long, Alexander and Yin, Wei and Ajanthan, Thalaiyasingam and Nguyen, Vu and Purkait, Pulak and Garg, Ravi and Blair, Alan and Shen, Chunhua and van den Hengel, Anton},
-  booktitle={IEEE/CVF Conference on Computer Vision and Pattern Recognition (CVPR)},
-  pages={6949--6959},
-  year={2022}
-}
-If you use this implementation in your work, please cite both the original RAC paper above and this repository:
-bibtexCopy@software{rafd2024,
-  title={Retrieval Augmented Fraud Detection (RAFD)},
-  author={[Your Name]},
-  year={2024},
-  url={https://github.com/[username]/RAFD}
-}
-Acknowledgments
-This implementation builds upon:
-
-The Retrieval Augmented Classification (RAC) methodology introduced by Long et al. in their CVPR 2022 paper
-SAINT (Self-Attention and Intersection Neural Network with Transformers) encoder architecture for tabular data, developed by Somepalli et al.
-FAISS (Facebook AI Similarity Search) library for efficient similarity search
-The implementation adapts the RAC approach from computer vision to the domain of fraud detection, demonstrating its effectiveness in handling class imbalance in financial data
-
 ```
